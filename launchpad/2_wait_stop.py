@@ -49,16 +49,20 @@ def _register_stop_handler():
 
   def _stop_handler():
     logging.info('_stop_handler called')
+    time.sleep(5)
+    logging.info('setting stop event!!')
     stop.set()
 
   lp.register_stop_handler(_stop_handler)
-  stop.wait()
+  # stop.wait()
+  # lp.wait_for_stop()
   logging.info('Clean termination of _register_stop_handler node')
   time.sleep(2)
 
 
 def _stop_program():
   time.sleep(4)
+  logging.info("_stop_program ending!!")
   lp.stop()
 
 
