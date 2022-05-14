@@ -1,0 +1,8 @@
+
+algorithm:
+  name: IMPALA
+
+model:
+  use_ctc_loss: True
+  use_dynamic_unroll: False
+  
