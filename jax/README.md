@@ -1,6 +1,9 @@
 
 # jax by google
 
+## Installation
+- `conda install cudnn` -- This automatically installs cuda too, select the cuda-nvcc version matching with cuda version
+- `conda install -c nvidia cuda-nvcc=<version>`
 
 ## References
 Library [link](https://github.com/google/jax)<br>
