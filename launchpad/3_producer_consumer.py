@@ -18,6 +18,7 @@ from typing import List
 from absl import app
 from absl import logging
 import launchpad as lp
+import time
 
 
 class Consumer:
@@ -41,6 +42,7 @@ class Consumer:
     # criterion.
     for _ in range(10):
       self.step()
+      time.sleep(1)
 
     # Stop the whole program (consumer and producers). Simply returning here
     # would stop the consumer but not the producers.
@@ -50,25 +52,37 @@ class Consumer:
     """Tells all the producers to perform one step of work."""
     # Call the producers to asynchronously produce work given a dummy context
     # represented by a counter.
-    futures = [
-        producer.futures.work(context)
-        for context, producer in enumerate(self._producers)
-    ]
+    # futures = [
+    #     producer.futures.work(context)
+    #     for context, producer in enumerate(self._producers)
+    # ]
 
-    # Block to gather the results of all the producers.
-    results = [future.result() for future in futures]
+    # # Block to gather the results of all the producers.
+    # results = [future.result() for future in futures]
+    results = [producer.work(context) for context, producer in enumerate(self._producers)]
     logging.info('Results: %s', results)
 
 
 class Producer:
   """A bare-bones producer."""
+  def __init__(
+      self,
+      id: int,
+  ) -> None:
+    self.id = id
+  def run(self):
+    while True:
+      print("t"+str(self.id))
+      time.sleep(2)
+      break
+    lp.stop()
 
   def work(self, context: int) -> int:
     # Add code here to perform work. Note that this method can be called in
     # multiple threads because of the use of Courier futures, and so it has to
     # be thread safe! In this example the producer is stateless, so thread
     # safety is not a concern.
-    return context
+    return context+10
 
 
 def make_program(num_producers: int) -> lp.Program:
@@ -82,7 +96,7 @@ def make_program(num_producers: int) -> lp.Program:
     # `program.add_node(lp.CourierNode(...))` returns a handle to this server.
     # These handles can then be passed to other nodes.
     producers = [
-        program.add_node(lp.CourierNode(Producer)) for _ in range(num_producers)
+        program.add_node(lp.CourierNode(Producer,i)) for i in range(num_producers)
     ]
 
   # Launch a single consumer that connects to the list of producers.
@@ -92,8 +106,9 @@ def make_program(num_producers: int) -> lp.Program:
 
   return program
 
-def main():
-  program = make_program(num_producers=_NUM_PRODUCERS.value)
+def main(argv):
+  print(argv)
+  program = make_program(num_producers=3)
 
   # Note that at launch time, none of the producers has been instantiated.
   # Producers are instantiated only at runtime.

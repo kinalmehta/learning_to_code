@@ -5,6 +5,7 @@ from absl import app
 from absl import logging
 
 import time
+import copy
 import numpy as np
 
 RUNNERS = 100
@@ -22,7 +23,7 @@ class Counter:
         name, arr = list_data
         for i in arr:
             self.dataset.append(name+str(i))
-        # return np.arange(100)
+        # return np.array(0)
     def get_dataset(self):
         return self.dataset
 
@@ -34,8 +35,7 @@ class Runner:
     def run(self):
         add_name = lambda n: self.name+str(n)
         for i in range(0,MAX_RANGE,5):
-            c = self.counter.add_batch_data((self.name, np.arange(i).tolist()))
-            # print(type(c))
+            self.counter.add_batch_data((self.name, np.arange(i)))
             self.counter.increment()
             time.sleep(0.5)
 
@@ -56,7 +56,8 @@ class Monitor:
 
 def make_program():
     program = lp.Program('program_wait')
-    counter = program.add_node(lp.CourierNode(Counter), label='counter_node')
+    # counter = program.add_node(lp.CourierNode(Counter), label='counter_node')
+    counter = Counter()
     for i in range(RUNNERS):
         program.add_node(lp.CourierNode(Runner, counter, str(i)+"r"), label='runner'+str(i))
     program.add_node(lp.CourierNode(Monitor, counter), label='monitor_node')
@@ -79,6 +80,6 @@ def main(argv):
 if __name__ == '__main__':
   app.run(main)
 
-
-# This program tests that the objects in a specific node are safe from multiple parallel calls happening concurrently
-# verify the contents of data.txt after running this program to verify the conclusions
+# Conclusion: 
+# This program shows that the objects passed to each LP node is shared among all.
+# This may slowdown the program execution and may cause unpredictable behavior.
